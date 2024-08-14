@@ -24,22 +24,12 @@ resource "aws_iam_user" "user" {
   count = 5
   name = "Terraform-${count.index +1}"
 }
-*/
-
-variable "username" {
-  type = list(string)
-  default = [ "Ansible", "Devops", "Developer" ]
-}
-
-resource "aws_iam_user" "user1" {
-  for_each = toset(var.username)
-  name = each.key
-}
 
 variable "instance_type" {
     type = list(string)
   default = ["t2.micro", "t2.small", "t2.medium"]
 }
+
 
 resource "aws_instance" "name" {
   ami = "ami-03972092c42e8c0ca"
@@ -48,3 +38,63 @@ resource "aws_instance" "name" {
 
 
 }
+
+*/
+
+variable "username" {
+  type    = list(string)
+  default = ["Ansible", "Devops", "Developer"]
+}
+
+resource "aws_iam_user" "user" {
+  for_each = toset(var.username)
+  name     = each.value
+  #name = each.key what is the difference between
+  depends_on = [ 
+    aws_iam_group.group_cd,
+    aws_iam_group.group_cd,
+    aws_iam_group.group_cd
+    
+     ]
+}
+resource "aws_iam_group" "group_ci" {
+  name = "CI"
+  path = "/"
+}
+
+resource "aws_iam_group" "group_cd" {
+  name = "CD"
+  path = "/"
+}
+
+resource "aws_iam_group" "group_ci_cd" {
+  name = "CI-CD"
+  path = "/"
+}
+
+
+# Attaching all 3 IAM Users to each group
+# I try to put each user with a structure placement without a success 
+
+resource "aws_iam_group_membership" "group_ci_membership" {
+  name  = "ci-membership"
+  users =  [for user in aws_iam_user.user : user.name]
+  group = aws_iam_group.group_ci.name
+}
+
+resource "aws_iam_group_membership" "group_cd_membership" {  
+  name  = "cd-membership"
+  users = [for user in aws_iam_user.user : user.name]
+  group = aws_iam_group.group_cd.name
+}
+
+resource "aws_iam_group_membership" "group_ci_cd_membership" {
+  name  = "ci-cd-membership"
+  users = [for user in aws_iam_user.user :  user.name[0] ]
+  group = aws_iam_group.group_ci_cd.name
+}
+
+
+# aws iam list-groups-for-user --user-name Thierry 
+# The above command help to list all group that the IAM user Thierry belong to
+

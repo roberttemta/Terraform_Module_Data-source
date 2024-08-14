@@ -18,3 +18,10 @@ resource "aws_iam_user" "user1" {
   }
 }
 */
+
+
+# If you want to destroy all your resources except one, use these commands
+
+## terraform state list 
+### terraform state rm <name_of_the_ressource>
+#### terraform destroy
