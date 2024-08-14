@@ -39,7 +39,7 @@ resource "aws_instance" "name" {
 
 }
 
-*/
+
 
 variable "username" {
   type    = list(string)
@@ -98,3 +98,14 @@ resource "aws_iam_group_membership" "group_ci_cd_membership" {
 # aws iam list-groups-for-user --user-name Thierry 
 # The above command help to list all group that the IAM user Thierry belong to
 
+*/
+
+resource "aws_iam_user" "user" {
+  count = 5
+  name = "Terraform-${count.index +10}"
+}
+
+import {
+  to = aws_iam_user.user1
+  id = "ROBERT-TEMTA"
+}
